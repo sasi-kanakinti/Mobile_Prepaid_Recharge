@@ -25,30 +25,24 @@ public class SecurityConfig {
     private JwtFilter jwtFilter;
 
     @SuppressWarnings("removal")
-	@Bean
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and()
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configure(http))  // ✅ enable CORS support
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-            		// inside your authorizeHttpRequests block, ensure these are present:
-            		.requestMatchers("/register/request").permitAll()
-            		.requestMatchers("/user/requests/**").authenticated() // user must be logged in to create requests
-            		.requestMatchers("/admin/**").hasRole("ADMIN")
-            		.requestMatchers("/register/admin/**").hasRole("ADMIN")
-
-            	.requestMatchers("/register/request").permitAll()
-            	.requestMatchers("/register/admin/**").hasRole("ADMIN")
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/", "/auth/**", "/register/request").permitAll()
+                .requestMatchers("/register/admin/**").hasRole("ADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/recharge/**", "/recharge/plans/**", "/plans/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/recharge/**", "/plans/**", "/user/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
     // Allow Vite/CRA dev servers and any other local origins you need.
     @Bean
