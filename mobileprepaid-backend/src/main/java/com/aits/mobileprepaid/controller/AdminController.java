@@ -4,6 +4,7 @@ import com.aits.mobileprepaid.entity.AccountUpdateRequest;
 import com.aits.mobileprepaid.entity.DeleteAccountRequest;
 import com.aits.mobileprepaid.entity.RegistrationRequest;
 import com.aits.mobileprepaid.entity.User;
+import com.aits.mobileprepaid.entity.Role;
 import com.aits.mobileprepaid.repo.AccountUpdateRequestRepository;
 import com.aits.mobileprepaid.repo.DeleteAccountRequestRepository;
 import com.aits.mobileprepaid.repo.RegistrationRequestRepository;
@@ -19,8 +20,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+/**
+ * AdminController - admin management endpoints (users, requests, stats)
+ *
+ * Note: This controller exposes an endpoint to create users directly:
+ *   POST /admin/users
+ *
+ * The incoming body should contain at least: name, email, mobile, password.
+ * Email must be unique. Password is mandatory and will be encoded.
+ */
 @RestController
 @RequestMapping("/admin")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AdminController {
 
     @Autowired private UserRepository userRepo;
@@ -38,6 +49,52 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userRepo.findAll());
+    }
+
+    // Create / add a new user (admin)
+    @PostMapping(value = "/users", consumes = "application/json")
+    public ResponseEntity<?> addUser(@RequestBody User newUser) {
+        if (newUser == null) return ResponseEntity.badRequest().body("Invalid user payload");
+
+        String email = newUser.getEmail() == null ? null : newUser.getEmail().trim();
+        String password = newUser.getPassword();
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+        if (password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body("Password is required");
+        }
+
+        // check existing
+        if (userRepo.findByEmail(email).isPresent()) {
+            return ResponseEntity.status(409).body("Email already registered");
+        }
+
+        // prepare user entity
+        User user = new User();
+        user.setName(newUser.getName());
+        user.setEmail(email);
+        user.setMobile(newUser.getMobile());
+        user.setPassword(encoder.encode(password));
+        user.setRole(Role.USER); // ensure regular user role
+
+        User saved = userRepo.save(user);
+
+        // send welcome email (best-effort)
+        try {
+            String subject = "Welcome to Mobile Prepaid";
+            String text = "Hi " + (saved.getName() == null ? "" : saved.getName())
+                    + ",\n\nYour account has been created by admin.\n\nLogin: "
+                    + saved.getEmail() + "\n";
+            emailService.sendMail(saved.getEmail(), subject, text);
+        } catch (Exception e) {
+            // keep going — admin added the user but mail could fail
+        }
+
+        // hide password in response
+        saved.setPassword(null);
+        return ResponseEntity.status(201).body(saved);
     }
 
     // Update user credentials/details (admin)
@@ -160,4 +217,52 @@ public class AdminController {
         stats.put("totalRecharges", historyRepo.count());
         return ResponseEntity.ok(stats);
     }
+
+    // --- New user registration requests view & approve/reject ---
+    @GetMapping("/registration-requests")
+    public ResponseEntity<List<RegistrationRequest>> getPendingRegistrations() {
+        return ResponseEntity.ok(registrationRepo.findByApprovedFalse());
+    }
+
+    @PostMapping("/registration-requests/{id}/approve")
+    public ResponseEntity<?> approveRegistration(@PathVariable Long id) {
+        Optional<RegistrationRequest> opt = registrationRepo.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.badRequest().body("Request not found");
+
+        RegistrationRequest req = opt.get();
+        if (req.isApproved()) return ResponseEntity.badRequest().body("Already approved");
+
+        // Create a user from registration request
+        User user = new User();
+        user.setName(req.getName());
+        user.setEmail(req.getEmail());
+        user.setMobile(req.getMobile());
+        user.setPassword(encoder.encode(req.getPassword()));
+        user.setRole(Role.USER);
+        userRepo.save(user);
+
+        req.setApproved(true);
+        registrationRepo.save(req);
+
+        emailService.sendMail(req.getEmail(),
+            "Registration Approved - Mobile Prepaid",
+            "Your registration has been approved. You can now log in to your account.");
+
+        return ResponseEntity.ok("Registration approved and user created successfully");
+    }
+
+    @PostMapping("/registration-requests/{id}/reject")
+    public ResponseEntity<?> rejectRegistration(@PathVariable Long id) {
+        Optional<RegistrationRequest> opt = registrationRepo.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.badRequest().body("Request not found");
+        RegistrationRequest req = opt.get();
+        registrationRepo.delete(req);
+
+        emailService.sendMail(req.getEmail(),
+            "Registration Rejected - Mobile Prepaid",
+            "Your registration request has been rejected by admin.");
+
+        return ResponseEntity.ok("Registration rejected and removed");
+    }
+
 }

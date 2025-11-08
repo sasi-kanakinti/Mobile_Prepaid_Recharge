@@ -1,51 +1,42 @@
 package com.aits.mobileprepaid.entity;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
-    private String mobile;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    private String mobile;
+
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<RechargeHistory> history;
+    // --- Constructors ---
+    public User() {}
 
-    public User() {
-    }
-
-    public User(Long id, String name, String mobile, String email, String password, Role role,
-            List<RechargeHistory> history) {
+    public User(Long id, String name, String email, String mobile, String password, Role role) {
         this.id = id;
         this.name = name;
-        this.mobile = mobile;
         this.email = email;
+        this.mobile = mobile;
         this.password = password;
         this.role = role;
-        this.history = history;
     }
 
-    // getters / setters
-
+    // --- Getters and Setters ---
     public Long getId() {
         return id;
     }
@@ -62,14 +53,6 @@ public class User {
         this.name = name;
     }
 
-    public String getMobile() {
-        return mobile;
-    }
-
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -78,12 +61,18 @@ public class User {
         this.email = email;
     }
 
-    @JsonIgnore
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
     public String getPassword() {
         return password;
     }
 
-    // keep setter normal so you can set (encoded) password
     public void setPassword(String password) {
         this.password = password;
     }
@@ -96,11 +85,15 @@ public class User {
         this.role = role;
     }
 
-    public List<RechargeHistory> getHistory() {
-        return history;
-    }
-
-    public void setHistory(List<RechargeHistory> history) {
-        this.history = history;
+    // --- Optional: for debugging ---
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", mobile='" + mobile + '\'' +
+                ", role=" + role +
+                '}';
     }
 }

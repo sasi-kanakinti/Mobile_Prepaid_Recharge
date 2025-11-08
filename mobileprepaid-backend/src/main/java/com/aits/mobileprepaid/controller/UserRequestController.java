@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Endpoints for users to request update/delete of their account.
  */
+@CrossOrigin(origins = "http://localhost:5173")
+
 @RestController
 @RequestMapping("/user/requests")
 public class UserRequestController {
