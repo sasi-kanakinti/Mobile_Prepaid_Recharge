@@ -1,0 +1,57 @@
+### 1️⃣ Register new user request
+POST http://localhost:8080/register/request
+Content-Type: application/json
+
+{
+  "name": "Sasidhar K",
+  "email": "testuser@example.com",
+  "mobile": "9999999999",
+  "message": "Please add me as a new user."
+}
+
+### 2️⃣ Admin login (use credentials from DataInitializer)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": {ADMIN_EMAIL},
+  "password": {ADMIN_PASSWORD}
+}
+
+### 3️⃣ Get pending registration requests
+GET http://localhost:8080/register/admin/pending
+Authorization: Bearer <paste_token_here>
+
+### 4️⃣ Approve a registration request
+POST http://localhost:8080/register/admin/approve/1
+Authorization: Bearer <paste_token_here>
+
+### 5️⃣ User login after approval
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "User@1234"
+}
+
+### 6️⃣ View recharge plans
+GET http://localhost:8080/plans
+
+### 7️⃣ Perform a recharge
+POST http://localhost:8080/recharge?userId=1&planId=2&paymentMethod=UPI
+Authorization: Bearer <paste_user_token_here>
+
+### 8️⃣ Check user recharge history
+GET http://localhost:8080/recharge/history/1
+Authorization: Bearer <paste_user_token_here>
+
+### 9️⃣ Send delete account request
+POST http://localhost:8080/user/requests/delete
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "email": "testuser@example.com",
+  "reason": "I want to delete my account."
+}
