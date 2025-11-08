@@ -1,13 +1,10 @@
 package com.aits.mobileprepaid.repo;
 
-import java.util.List;
-
+import com.aits.mobileprepaid.entity.RechargePlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.aits.mobileprepaid.entity.RechargePlan;
+import java.util.List;
 
-public interface RechargePlanRepository extends JpaRepository<RechargePlan, Integer> {
-
-	
-	List<RechargePlan> findByCategory(String category); //jpa methodnaming
+public interface RechargePlanRepository extends JpaRepository<RechargePlan, Long> {
+    List<RechargePlan> findByCategoryIgnoreCase(String category);
 }

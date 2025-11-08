@@ -1,8 +1,5 @@
 package com.aits.mobileprepaid.controller;
 
-
-
-
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,13 +27,19 @@ public class RechargePlanController {
     public List<RechargePlan> getByCategory(@PathVariable String category) {
         return service.getPlansByCategory(category);
     }
-    
+
     @PostMapping
     public RechargePlan insert(@RequestBody @NonNull RechargePlan rechargeplan) {
-    	
-    	
-    	return service.insert(rechargeplan);
-    	
-    	
+        return service.insert(rechargeplan);
+    }
+
+    @PutMapping("/{id}")
+    public RechargePlan update(@PathVariable Long id, @RequestBody RechargePlan plan) {
+        return service.updatePlan(id, plan);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        service.deletePlan(id);
     }
 }

@@ -1,15 +1,10 @@
 package com.aits.mobileprepaid.repo;
 
-import java.util.List;
-
+import com.aits.mobileprepaid.entity.RechargeHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.aits.mobileprepaid.entity.RechargeHistory;
+import java.util.List;
 
-
-public interface RechargeHistoryRepository extends JpaRepository<RechargeHistory, Long>{
-
-	
-	List<RechargeHistory> findByUserId(Long userId);
-	
+public interface RechargeHistoryRepository extends JpaRepository<RechargeHistory, Long> {
+    List<RechargeHistory> findByUserId(Long userId);
 }

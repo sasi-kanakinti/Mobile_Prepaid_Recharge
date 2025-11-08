@@ -7,37 +7,41 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+@SuppressWarnings("unused")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 public class RechargePlan {
-	
-	
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Integer id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    
 	private String name;
-	private String category;
-	private double price;
-	
-	private int validityInDays;
+    private String category;
+    private double price;
+    private int validityInDays;
+    private String description;
 
-	public RechargePlan(Integer id, String name, String category, double price, int validityInDays) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.category = category;
-		this.price = price;
-		this.validityInDays = validityInDays;
-	}
+    // Optional convenience constructor (if needed elsewhere)
+    public RechargePlan(Long id, String name, String category, double price, int validityInDays, String description) {
+        this.id = id;
+        this.name = name;
+        this.category = category;
+        this.price = price;
+        this.validityInDays = validityInDays;
+        this.description = description;
+    }
+    
+    public RechargePlan() {}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -72,10 +76,14 @@ public class RechargePlan {
 	public void setValidityInDays(int validityInDays) {
 		this.validityInDays = validityInDays;
 	}
-	
-	public RechargePlan() {}
-	
-	
-	
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	
 }

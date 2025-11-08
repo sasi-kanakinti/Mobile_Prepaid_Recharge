@@ -1,35 +1,35 @@
 package com.aits.mobileprepaid.controller;
 
-import org.springframework.lang.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.aits.mobileprepaid.dto.RechargeRequest;
 import com.aits.mobileprepaid.entity.RechargeHistory;
 import com.aits.mobileprepaid.service.RechargeService;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-
+@RequestMapping("/recharge")
 public class RechargeController {
 
-	
-    private final  RechargeService service;
+    @Autowired
+    private RechargeService service;
 
-    public RechargeController(RechargeService service) {
-        this.service = service;
+    // POST: perform recharge
+    @SuppressWarnings("null")
+	@PostMapping
+    public ResponseEntity<String> recharge(@Valid @RequestBody RechargeRequest request) {
+        String message = service.recharge(request.getUserId(), request.getPlanId(), request.getPaymentMethod());
+        return ResponseEntity.ok(message);
     }
 
-    @PostMapping("/recharge")
-    public String recharge(
-            @RequestParam @NonNull Long userId,
-            @RequestParam @NonNull Integer planId,
-            @RequestParam String paymentMethod) {
-        return service.recharge(userId, planId, paymentMethod);
-    }
-
-    @GetMapping("recharge/history/{userId}")
-    public List<RechargeHistory> getHistory(@PathVariable Long userId) {
-        return service.getUserHistory(userId);
+    // GET: fetch recharge history for user
+    @GetMapping("/history/{userId}")
+    public ResponseEntity<List<RechargeHistory>> getHistory(@PathVariable Long userId) {
+        List<RechargeHistory> history = service.getUserHistory(userId);
+        return ResponseEntity.ok(history);
     }
 }
-

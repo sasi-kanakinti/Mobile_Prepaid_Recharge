@@ -1,49 +1,52 @@
 package com.aits.mobileprepaid.security;
 
 import java.util.Date;
-import javax.crypto.SecretKey;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtil {
 
-    private static final String SECRET = "mySecretKeymySecretKeymySecretKeymySecretKey"; // at least 32 chars
-    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
+    @Value("${jwt.secret:mySecretKeymySecretKeymySecretKeymySecretKey}")
+    private String secret;
 
-    // 🔹 Generate JWT Token
-    public String generateToken(String username) {
-        return Jwts.builder()
-            .subject(username)
-            .issuedAt(new Date())
-            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour expiry
-            .signWith(SECRET_KEY)
-            .compact();
+    // expiry in ms (default 1 hour)
+    @Value("${jwt.expiration-ms:3600000}")
+    private long jwtExpirationMs;
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    // 🔹 Validate JWT Token
+    public String generateToken(String username) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                .verifyWith(SECRET_KEY)
-                .build()
-                .parseSignedClaims(token);
+            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
             return true;
-        } catch (Exception e) {
+        } catch (Exception ex) {
             return false;
         }
     }
 
-    // 🔹 Extract Username from Token
     public String extractUsername(String token) {
-        Claims claims = Jwts.parser()
-            .verifyWith(SECRET_KEY)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+        Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
 }

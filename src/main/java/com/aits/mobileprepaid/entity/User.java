@@ -2,6 +2,7 @@ package com.aits.mobileprepaid.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,101 +11,96 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data  
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 public class User {
-	
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String name;
     private String mobile;
     private String email;
     private String password;
-    
+
     @Enumerated(EnumType.STRING)
-   private Role role;
-    
+    private Role role;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<RechargeHistory> history;
 
-	public User(Long id, String name, String mobile, String email, String password, Role role,
-			List<RechargeHistory> history) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.mobile = mobile;
-		this.email = email;
-		this.password = password;
-		this.role = role;
-		this.history = history;
-	}
+    public User() {
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public User(Long id, String name, String mobile, String email, String password, Role role,
+            List<RechargeHistory> history) {
+        this.id = id;
+        this.name = name;
+        this.mobile = mobile;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.history = history;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    // getters / setters
 
-	public String getName() {
-		return name;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getMobile() {
-		return mobile;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setMobile(String mobile) {
-		this.mobile = mobile;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public String getMobile() {
+        return mobile;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public Role getRole() {
-		return role;
-	}
+    @JsonIgnore
+    public String getPassword() {
+        return password;
+    }
 
-	public void setRole(Role role) {
-		this.role = role;
-	}
+    // keep setter normal so you can set (encoded) password
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public List<RechargeHistory> getHistory() {
-		return history;
-	}
+    public Role getRole() {
+        return role;
+    }
 
-	public void setHistory(List<RechargeHistory> history) {
-		this.history = history;
-	}
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
-	public User() {}
-   
-   
+    public List<RechargeHistory> getHistory() {
+        return history;
+    }
 
+    public void setHistory(List<RechargeHistory> history) {
+        this.history = history;
+    }
 }
